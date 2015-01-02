@@ -1,22 +1,26 @@
-var State = require('./state.js').State,
-    Device = require('./device.js').Device,
-    Rule = require('./rule.js').Rule;
+var State = require('./state.js'),
+    Device = require('./device.js'),
+    Rule = require('./rule.js'),
+    TestFileSensor = require('./sensors/test-file.js');
 
 function main() {
-  var sw1 = new Device('switch 1'),
+  var state = new State(),
+      sw1 = new Device('switch 1'),
       sw2 = new Device('switch 2'),
+      fs1 = new TestFileSensor('sensor 1', '/tmp/foo'),
       rule1 = new Rule(function() {
         var retval = ! this.get("last");
         this.set("last", retval);
-        this.setNextUpdate(1);
+        this.setNextUpdate(60);
         return retval;
       });
 
   rule1.addDevice(sw1);
   rule1.addDevice(sw2, 80, 0);
+  rule1.addSensor(fs1);
 
-  State.addRule(rule1);
-  State.update();
+  state.addRule(rule1);
+  state.update();
 }
 
 main();

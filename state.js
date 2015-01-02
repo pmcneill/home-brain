@@ -32,11 +32,12 @@ State.prototype = {
 
     rule.sensors().forEach(function(sen) {
       sen.onChange(function() {
-        if ( this._timeout_handle ) {
-          clearTimeout(this._timeout_handle);
-          this._timeout_handle = null;
+        if ( that._timeout_handle ) {
+          clearTimeout(that._timeout_handle);
+          that._timeout_handle = null;
         }
 
+        console.log("Cleared timeout, forcing immediate update");
         that.update();
       });
     });
@@ -67,12 +68,11 @@ State.prototype = {
       }
     }
 
+    console.log("Update finished, next run in " + next_run + " seconds");
+
     // Run in a new context, using .bind() to set the "this" for the call
     this._timeout_handle = setTimeout(this.update.bind(this), next_run * 1000);
   }
 };
 
-// State is a singleton
-module.exports = {
-  State: new State()
-};
+module.exports = State;

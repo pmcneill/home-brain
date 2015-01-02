@@ -23,6 +23,4 @@ Device.prototype = {
   }
 };
 
-module.exports = {
-  Device: Device
-};
+module.exports = Device;

@@ -1,6 +1,6 @@
 function Rule(eval_function) {
   this._devices = [];
-  this._sensors = [];
+  this._sensors = {};
   this._subRules = [];
   this._evaluate = eval_function;
   this._data = {};
@@ -24,11 +24,16 @@ Rule.prototype = {
   },
 
   addSensor: function(sensor) {
-    this._sensors.push(sensor);
+    this._sensors[sensor.key()] = sensor;
     return this;
   },
   sensors: function() {
-    return this._sensors;
+    var retval = [];
+    for ( var key in this._sensors ) {
+      if ( ! this._sensors.hasOwnProperty(key) ) continue;
+      retval.push(this._sensors[key]);
+    }
+    return retval;
   },
 
   // For the eval function to persist data
@@ -74,6 +79,4 @@ Rule.prototype = {
   }
 };
 
-module.exports = {
-  Rule: Rule
-};
+module.exports = Rule;
