@@ -1,11 +1,13 @@
 function State() {
   this._rules = [];
   this._devices = {};
+  this._timeout_handle = null;
 }
 
 State.prototype = {
   addDevice: function(dev) {
     this._devices[dev.key()] = dev;
+    return this;
   },
 
   // Rule instances aren't modified by the state manager, so they
@@ -27,18 +29,34 @@ State.prototype = {
     rule.devices().forEach(function(dev) {
       that.addDevice(dev);
     });
+
+    rule.sensors().forEach(function(sen) {
+      sen.onChange(function() {
+        if ( this._timeout_handle ) {
+          clearTimeout(this._timeout_handle);
+          this._timeout_handle = null;
+        }
+
+        that.update();
+      });
+    });
+
+    return this;
   },
 
   update: function() {
     var new_levels = {};
+    // Check things at least every half hour
+    var next_run = 1800, that = this;
 
-    // Run each rule, from lowest to highest priority, keeping
-    // track of 
     this._rules.forEach(function(r) {
       var rule_levels = r.rule.getNewLevels();
       for ( var key in rule_levels ) {
         new_levels[key] = rule_levels[key];
       }
+
+      var rule_next_run = r.rule.nextUpdate();
+      if ( rule_next_run < next_run ) next_run = rule_next_run;
     });
 
     for ( var key in new_levels ) {
@@ -48,9 +66,13 @@ State.prototype = {
         this._devices[key].setLevel(l);
       }
     }
+
+    // Run in a new context, using .bind() to set the "this" for the call
+    this._timeout_handle = setTimeout(this.update.bind(this), next_run * 1000);
   }
 };
 
+// State is a singleton
 module.exports = {
-  State: State
+  State: new State()
 };

@@ -1,31 +1,41 @@
 function Rule(eval_function) {
   this._devices = [];
+  this._sensors = [];
   this._subRules = [];
   this._evaluate = eval_function;
   this._data = {};
+  this._next_update = null;
 }
 
 Rule.prototype = {
   addDevice: function(dev, onLevel, offLevel) {
     onLevel = (onLevel === undefined) ? 100 : onLevel;
-    offLevel = (offLevel == undefined) ? 0 : offLevel;
+    offLevel = (offLevel === undefined) ? 0 : offLevel;
 
     this._devices.push({
       device: dev,
       onLevel: onLevel,
       offLevel: offLevel
     });
+    return this;
   },
-
   devices: function() {
     return this._devices.map(function(d) { return d.device; });
   },
 
-  // For the eval function to persist data
-  set: function(key, value) {
-    return this._data[key] = value;
+  addSensor: function(sensor) {
+    this._sensors.push(sensor);
+    return this;
+  },
+  sensors: function() {
+    return this._sensors;
   },
 
+  // For the eval function to persist data
+  set: function(key, value) {
+    this._data[key] = value;
+    return this;
+  },
   get: function(key) {
     return this._data[key];
   },
@@ -42,6 +52,8 @@ Rule.prototype = {
     var levelField = "onLevel",
         retval = {};
 
+    this._next_update = null;
+
     if ( ! this.evaluate() ) levelField = "offLevel";
 
     this._devices.forEach(function(dev) {
@@ -49,6 +61,16 @@ Rule.prototype = {
     });
 
     return retval;
+  },
+
+  // The evaluate function should call this to request a future
+  // update.
+  setNextUpdate: function(secs) {
+    this._next_update = secs;
+    return this;
+  },
+  nextUpdate: function() {
+    return this._next_update;
   }
 };
 
