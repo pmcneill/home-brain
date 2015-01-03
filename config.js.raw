@@ -1,5 +1,10 @@
 module.exports = {
   wunderground_api_key: '',
   latitude: 90,
-  longitude: 180
+  longitude: 180,
+  debug: false,
+  // From the wiringPi package
+  //  https://github.com/WiringPi/WiringPi
+  //  https://github.com/hardkernel/wiringPi (for ODroid)
+  gpio_path: '/usr/local/bin/gpio'
 };

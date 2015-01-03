@@ -1,5 +1,4 @@
-var fs = require('fs'),
-    http = require('http'),
+var http = require('http'),
     Sensor = require('../sensor.js'),
     cfg = require('../config.js');
 

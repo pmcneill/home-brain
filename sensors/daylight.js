@@ -1,5 +1,4 @@
-var fs = require('fs'),
-    suncalc = require('suncalc'),
+var suncalc = require('suncalc'),
     Sensor = require('../sensor.js'),
     cfg = require('../config.js');
 
@@ -36,15 +35,19 @@ DaylightSensor.prototype.recalculate = function() {
   }
 
   var isDark = (now < this.get("endGoldenHour")) || (now > this.get("startGoldenHour")),
-      lastDark = this.get("is_dark");
+      lastDark = this.get("isDark");
 
   if ( lastDark === undefined || lastDark != isDark ) {
-    this.set("is_dark", isDark);
+    this.set("isDark", isDark);
 
     isChanged = true;
   }
 
   if ( isChanged ) this.changed();
+
+  if ( cfg.debug ) {
+    console.log(this._data);
+  }
 
   return this;
 };
