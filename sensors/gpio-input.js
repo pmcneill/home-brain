@@ -32,8 +32,8 @@ GPIOInputSensor.prototype.waitForInput = function() {
   util.gpioExec("wfi", this._pin, this._wfi_mode, function() {
     that.changed();
 
-    // Give it some leeway for de-bouncing
-    setTimeout(that.waitForInput.bind(that), 100);
+    // Give it some leeway for de-bouncing / pin release
+    setTimeout(that.waitForInput.bind(that), 250);
   });
 };
 
