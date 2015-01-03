@@ -33,6 +33,9 @@ Rule.prototype = {
     }
     return retval;
   },
+  sensor: function(key) {
+    return this._sensors[key];
+  },
 
   // For the eval function to persist data
   set: function(key, value) {

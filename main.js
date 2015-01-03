@@ -4,26 +4,41 @@ var State = require('./state.js'),
     TestFileSensor = require('./sensors/test-file.js'),
     DaylightSensor = require('./sensors/daylight.js'),
     WeatherSensor = require('./sensors/weather.js'),
-    GPIOInputSensor = require('./sensors/gpio-input.js');
+    GPIOInputSensor = require('./sensors/gpio-input.js'),
+    GPIOOutputDevice = require('./devices/gpio-output.js');
 
 function main() {
   var state = new State(),
-      sw1 = new Device('switch 1', { level: 0 }),
-      sw2 = new Device('switch 2', { level: 25 }),
-      rule1 = new Rule(function() {
-        var retval = ! this.get("last");
-        this.set("last", retval);
-        this.setNextUpdate(60);
-        return retval;
-      });
+      sw1 = new Device('Lamp 1', { level: 0 }),
+      sw2 = new Device('Lamp 2, only dims', { level: 25 }),
+      gp1 = new GPIOOutputDevice('LED', 0),
+      gp2 = new GPIOOutputDevice('Relay', 1, 1);
 
-  rule1.addDevice(sw1, { level: 100 });
-  rule1.addDevice(sw2, { level: 80 });
-//  rule1.addSensor(new GPIOInputSensor('Motion Detector', 7, 0));
-//  rule1.addSensor(new WeatherSensor('Weather'));
-  rule1.addSensor(new DaylightSensor('Light or Dark'));
+  // Turn switches on and off every minute...
+  state.addRule(
+    new Rule(function() {
+      var retval = ! this.get("last");
+      this.set("last", retval);
+      this.setNextUpdate(60);
+      return retval;
+    }).addDevice(sw1, { level: 80 })
+      .addDevice(sw2, { level: 80 })
+      .addDevice(gp1, { level: 1 })
+      .addDevice(gp2, { level: 0 }),
+    1 // priority
+  );
 
-  state.addRule(rule1);
+  // Higher-priority rule that turns lamp 1 on 100% while dark.
+  // No timing information here, since the daylight sensor will
+  // trigger a change event when isDark changes.
+  state.addRule(
+    new Rule(function() {
+      return this.sensor('Light or Dark').get('isDark');
+    }).addDevice(sw1, { level: 100 })
+      .addSensor(new DaylightSensor('Light or Dark')),
+    2
+  );
+
   state.update();
 }
 
