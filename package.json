@@ -3,7 +3,8 @@
     "version"       : "0.0.1",
     "description"   : "Event-based home automation",
     "dependencies"  : {
-        "suncalc"   : "1.5.*"
+        "suncalc"   : "1.5.*",
+        "openzwave" : "*"
     },
     "author": {
         "name": "Patrick McNeill",
