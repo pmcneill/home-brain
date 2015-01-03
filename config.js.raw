@@ -1,0 +1,5 @@
+module.exports = {
+  wunderground_api_key: '',
+  latitude: 90,
+  longitude: 180
+};

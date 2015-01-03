@@ -14,7 +14,7 @@ Sensor.prototype = {
     return this;
   },
   changed: function() {
-    this._handler();
+    if ( this._handler ) this._handler();
     return this;
   },
 

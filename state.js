@@ -1,3 +1,5 @@
+var cfg = require('./config.js');
+
 function State() {
   this._rules = [];
   this._devices = {};
@@ -37,7 +39,11 @@ State.prototype = {
           that._timeout_handle = null;
         }
 
-        console.log("Cleared timeout, forcing immediate update");
+        if ( cfg.debug ) {
+          console.log(sen.key() + ": Cleared timeout, forcing immediate update");
+          console.log(sen._data);
+        }
+
         that.update();
       });
     });
@@ -68,7 +74,9 @@ State.prototype = {
       }
     }
 
-    console.log("Update finished, next run in " + next_run + " seconds");
+    if ( cfg.debug ) {
+      console.log("Update finished, next run in " + next_run + " seconds");
+    }
 
     // Run in a new context, using .bind() to set the "this" for the call
     this._timeout_handle = setTimeout(this.update.bind(this), next_run * 1000);

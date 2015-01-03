@@ -1,0 +1,13 @@
+{
+    "name"          : "home-brain",
+    "version"       : "0.0.1",
+    "description"   : "Event-based home automation",
+    "dependencies"  : {
+        "suncalc"   : "1.5.*"
+    },
+    "author": {
+        "name": "Patrick McNeill",
+        "email": "patrick@patrickmcneill.com",
+        "url": "http://patrickmcneill.com"
+    }
+}

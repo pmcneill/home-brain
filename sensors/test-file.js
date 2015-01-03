@@ -7,7 +7,7 @@ function TestFileSensor(name, path) {
 
   setInterval(function() {
     fs.exists(path, function(exists) {
-      if ( exists != that.get("exists") ) {
+      if ( exists != !!that.get("exists") ) {
         that.set("exists", exists);
         that.changed();
       }
