@@ -1,25 +1,29 @@
-function Device(name) {
+var util = require('./util.js');
+
+function Device(name, defaults) {
   this._name = name;
   this._zones = [];
-  this._level = 0;
+  this._defaults = defaults || {};
+  this._data = util.shallowCopy(this._defaults);
 }
 
 Device.prototype = {
   key: function() {
     return this._name;
   },
-  off: function() {
-    this.setLevel(0);
+  set: function(key, value) {
+    console.log("Setting " + key + " for " + this._name + " to " + value);
+    this._data[key] = value;
+    return this;
   },
-  on: function() {
-    this.setLevel(100);
+  get: function(key) {
+    return this._data[key];
   },
-  setLevel: function(l) {
-    console.log("Setting level for " + this._name + " to " + l);
-    return this._level = l;
+  defaultFor: function(key) {
+    return this._defaults[key];
   },
-  level: function() {
-    return this._level;
+  defaults: function() {
+    return util.shallowCopy(this._defaults);
   }
 };
 

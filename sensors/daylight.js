@@ -46,7 +46,7 @@ DaylightSensor.prototype.recalculate = function() {
   if ( isChanged ) this.changed();
 
   if ( cfg.debug ) {
-    console.log(this._data);
+    console.log("Daylight ends: " + this.get("startGoldenHour") + ", dark: " + isDark);
   }
 
   return this;

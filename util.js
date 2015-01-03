@@ -7,5 +7,12 @@ module.exports = {
       if ( err ) throw "Error running GPIO";
       callback(stdout);
     });
+  },
+  shallowCopy: function(obj) {
+    var retval = {};
+    for ( var key in obj ) {
+      if ( obj.hasOwnProperty(key) ) retval[key] = obj[key];
+    }
+    return retval;
   }
 };

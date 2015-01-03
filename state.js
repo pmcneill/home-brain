@@ -52,25 +52,39 @@ State.prototype = {
   },
 
   update: function() {
-    var new_levels = {};
     // Check things at least every half hour
     var next_run = 1800, that = this;
+    var attrs = {};
+
+    // The device defaults are basically -infinity priority, when it comes
+    // to rules and weighting.
+    for ( var key in this._devices ) {
+      attrs[key] = this._devices[key].defaults();
+    }
 
     this._rules.forEach(function(r) {
-      var rule_levels = r.rule.getNewLevels();
-      for ( var key in rule_levels ) {
-        new_levels[key] = rule_levels[key];
+      if ( r.rule.evaluate() ) {
+        var rattrs = r.rule.attributes();
+        for ( var dev_key in rattrs ) {
+          for ( var attr_key in rattrs[dev_key] ) {
+            attrs[dev_key][attr_key] = rattrs[dev_key][attr_key];
+          }
+        }
       }
 
       var rule_next_run = r.rule.nextUpdate();
-      if ( rule_next_run < next_run ) next_run = rule_next_run;
+      if ( rule_next_run && rule_next_run < next_run ) next_run = rule_next_run;
     });
 
-    for ( var key in new_levels ) {
-      var l = new_levels[key];
+    for ( var dev_key in attrs ) {
+      var dattrs = attrs[dev_key],
+          dev = this._devices[dev_key];
 
-      if ( l != this._devices[key].level() ) {
-        this._devices[key].setLevel(l);
+      for ( var attr_key in dattrs ) {
+        // Only update an attribute level if it's different
+        if ( dattrs[attr_key] != dev.get(attr_key) ) {
+          dev.set(attr_key, dattrs[attr_key]);
+        }
       }
     }
 

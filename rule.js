@@ -8,14 +8,12 @@ function Rule(eval_function) {
 }
 
 Rule.prototype = {
-  addDevice: function(dev, onLevel, offLevel) {
-    onLevel = (onLevel === undefined) ? 100 : onLevel;
-    offLevel = (offLevel === undefined) ? 0 : offLevel;
-
+  // Attributes is an object hash of fields to set in the
+  // device associated with the values to set them to.
+  addDevice: function(dev, attributes) {
     this._devices.push({
       device: dev,
-      onLevel: onLevel,
-      offLevel: offLevel
+      attributes: attributes
     });
     return this;
   },
@@ -53,16 +51,11 @@ Rule.prototype = {
     return this._evaluate();
   },
 
-  getNewLevels: function() {
-    var levelField = "onLevel",
-        retval = {};
-
-    this._next_update = null;
-
-    if ( ! this.evaluate() ) levelField = "offLevel";
+  attributes: function() {
+    var retval = {};
 
     this._devices.forEach(function(dev) {
-      retval[dev.device.key()] = dev[levelField];
+      retval[dev.device.key()] = dev.attributes;
     });
 
     return retval;
@@ -75,7 +68,9 @@ Rule.prototype = {
     return this;
   },
   nextUpdate: function() {
-    return this._next_update;
+    var retval = this._next_update;
+    this._next_update = null;
+    return retval;
   }
 };
 
