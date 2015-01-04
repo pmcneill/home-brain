@@ -37,6 +37,9 @@ Dimmer.prototype = {
     return this._actual_level;
   },
   setLevel: function(level) {
+    if ( level >= 100 ) level = 99;
+    if ( level < 0 ) level = 0;
+
     zwave.setLevel(this._id, level);
     return this;
   },
@@ -47,7 +50,9 @@ Dimmer.prototype = {
 };
 
 var value_handler = function(nodeid, comclass, value) {
-  if ( comclass != 38 ) return;
+  if ( comclass != 38 || value.label != 'Level' ) return;
+
+//  console.log(nodeid + " value received " + value.value);
 
   if ( ! nodes[nodeid] ) {
     nodes[nodeid] = new Dimmer(nodeid);

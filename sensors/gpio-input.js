@@ -21,15 +21,32 @@ function GPIOInputSensor(name, pin, target) {
       setTimeout(that.waitForInput.bind(that), 100);
     })
   });
+
+  setInterval(this.readLevel.bind(this), 15000);
 }
 
 GPIOInputSensor.prototype = new Sensor();
 GPIOInputSensor.prototype.constructor = GPIOInputSensor;
 
+GPIOInputSensor.prototype.readLevel = function() {
+  var that = this, lastLevel = this.get("level");
+
+  util.gpioExec("read", this._pin, "", function(out) {
+    var level = parseInt(out.trim());
+    that.set("level", level);
+
+    if ( level == that._target ) that.set("lastTargetAt", new Date());
+
+    if ( lastLevel != level ) that.changed();
+  });
+};
+
 GPIOInputSensor.prototype.waitForInput = function() {
   var that = this;
 
   util.gpioExec("wfi", this._pin, this._wfi_mode, function() {
+    that.set("lastTargetAt", new Date());
+
     that.changed();
 
     // Give it some leeway for de-bouncing / pin release
