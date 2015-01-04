@@ -24,6 +24,9 @@ Sensor.prototype = {
   set: function(name, value) {
     this._data[name] = value;
     return this;
+  },
+  has: function(name) {
+    return this._data.hasOwnProperty(name);
   }
 };
 

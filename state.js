@@ -85,7 +85,7 @@ State.prototype = {
 
       for ( var attr_key in dattrs ) {
         // Only update an attribute level if it's different
-        if ( dattrs[attr_key] != dev.get(attr_key) ) {
+        if ( dattrs[attr_key] !== dev.get(attr_key) ) {
           dev.set(attr_key, dattrs[attr_key]);
         }
       }

@@ -4,7 +4,7 @@ function Device(name, defaults) {
   this._name = name;
   this._zones = [];
   this._defaults = defaults || {};
-  this._data = util.shallowCopy(this._defaults);
+  this._data = {};
 }
 
 Device.prototype = {

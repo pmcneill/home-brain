@@ -1,13 +1,20 @@
-function Rule(eval_function) {
+var cfg = require('./config.js');
+
+function Rule(name, eval_function) {
+  this._name = name;
   this._devices = [];
   this._sensors = {};
-  this._subRules = [];
+  this._subRules = {};
   this._evaluate = eval_function;
   this._data = {};
   this._next_update = null;
 }
 
 Rule.prototype = {
+  key: function() {
+    return this._name;
+  },
+
   // Attributes is an object hash of fields to set in the
   // device associated with the values to set them to.
   addDevice: function(dev, attributes) {
@@ -42,15 +49,35 @@ Rule.prototype = {
     this._data[key] = value;
     return this;
   },
+  unset: function(key) {
+    delete this._data[key];
+    return this;
+  },
   get: function(key) {
     return this._data[key];
   },
 
+  addSubRule: function(rule) {
+    this._subRules[rule.key()] = rule;
+
+    // Copy up any sensors used to ensure the state will pick them up later
+    var that = this;
+    rule.sensors().forEach(function(sen) {
+      that.addSensor(sen);
+    });
+
+    return this;
+  },
+  subRule: function(key) {
+    return this._subRules[key];
+  },
+
   evaluate: function() {
-    for ( var i = 0 ; i < this._subRules.length ; i++ ) {
-      if ( ! this._subRules.evaluate() ) return false;
+    for ( var key in this._subRules ) {
+      if ( ! this._subRules[key].evaluate() ) return false;
     }
 
+    if ( ! this._evaluate ) return true;
     return this._evaluate();
   },
 
@@ -64,15 +91,29 @@ Rule.prototype = {
     return retval;
   },
 
-  // The evaluate function should call this to request a future
-  // update.
+  // The evaluate function should call this to request a future update.
   setNextUpdate: function(secs) {
     this._next_update = secs;
     return this;
   },
   nextUpdate: function() {
     var retval = this._next_update;
+
+    if ( cfg.debug ) console.log(this._name + ": main next update time: " + retval);
+
+    for ( var key in this._subRules ) {
+      var subNext = this._subRules[key].nextUpdate();
+
+      if ( subNext && ( ! retval || subNext < retval ) ) {
+        if ( cfg.debug ) console.log(this._name + " child " + key + " time is lower: " + retval + " vs " + subNext);
+        retval = subNext;
+      }
+    }
+
+    if ( cfg.debug && this._next_update != retval ) console.log(this._name + ": using " + retval);
+
     this._next_update = null;
+
     return retval;
   }
 };
