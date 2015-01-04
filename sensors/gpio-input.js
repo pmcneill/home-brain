@@ -46,6 +46,7 @@ GPIOInputSensor.prototype.waitForInput = function() {
 
   util.gpioExec("wfi", this._pin, this._wfi_mode, function() {
     that.set("lastTargetAt", new Date());
+    that.set("level", that._target);
 
     that.changed();
 

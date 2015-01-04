@@ -2,7 +2,7 @@ var cfg = require('./config.js');
 
 function Rule(name, eval_function) {
   this._name = name;
-  this._devices = [];
+  this._devices = {};
   this._sensors = {};
   this._subRules = {};
   this._evaluate = eval_function;
@@ -18,14 +18,16 @@ Rule.prototype = {
   // Attributes is an object hash of fields to set in the
   // device associated with the values to set them to.
   addDevice: function(dev, attributes) {
-    this._devices.push({
+    this._devices[dev.key()] = {
       device: dev,
       attributes: attributes
-    });
+    };
     return this;
   },
   devices: function() {
-    return this._devices.map(function(d) { return d.device; });
+    var retval = [];
+    for ( var key in this._devices ) retval.push(this._devices[key].device);
+    return retval;
   },
 
   addSensor: function(sensor) {
@@ -81,12 +83,15 @@ Rule.prototype = {
     return this._evaluate();
   },
 
+  setAttribute: function(dev_key, attr, value) {
+    this._devices[dev_key].attributes[attr] = value;
+  },
   attributes: function() {
     var retval = {};
 
-    this._devices.forEach(function(dev) {
-      retval[dev.device.key()] = dev.attributes;
-    });
+    for ( var key in this._devices ) {
+      retval[key] = this._devices[key].attributes;
+    };
 
     return retval;
   },

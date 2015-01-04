@@ -1,4 +1,5 @@
-var State = require('./state.js'),
+var fs = require('fs'),
+    State = require('./state.js'),
     Device = require('./device.js'),
     Rule = require('./rule.js'),
     DaylightSensor = require('./sensors/daylight.js'),
@@ -6,6 +7,8 @@ var State = require('./state.js'),
     BeforeTimeRule = require('./rules/before-time.js'),
     MotionDelayRule = require('./rules/motion-delay.js'),
     GPIOInputSensor = require('./sensors/gpio-input.js'),
+    FileSensor = require('./sensors/test-file.js'),
+    ZWave = require('./zwave.js'),
     ZWaveDimmerDevice = require('./devices/zwave-dimmer.js');
 
 function main() {
@@ -20,6 +23,17 @@ function main() {
       motion = new GPIOInputSensor('Den Motion', 7, 0),
       daylight = new DaylightSensor('Daylight');
       darkness = new DarknessRule();
+
+  // Obviously, refactor this...
+  var zwave_devices = {
+    3: tree,
+    4: den1,
+    5: den2,
+    6: deck,
+    7: flood,
+    8: garage,
+    9: den3
+  };
 
   darkness.addSensor(daylight);
 
@@ -47,6 +61,29 @@ function main() {
           .addDevice(den2, { level: 40 }),
     5
   );
+
+  ZWave.onReady(function(nodes) {
+    for (var node_id in nodes) {
+      (function(node_id) {
+        var key = zwave_devices[node_id].key(),
+            path = "/tmp/node-" + node_id;
+
+        console.log("Node ID " + node_id + " controlled at " + path);
+
+        state.addRule(
+          new Rule(key + ' manual control', function() {
+            if ( ! this.sensor(path).get("exists") ) return false;
+            var level = parseInt(fs.readFileSync(path, "utf8")) || 75;
+            this.setAttribute(key, 'level', level);
+            return true;
+          })
+          .addSensor(new FileSensor(path, path))
+          .addDevice(zwave_devices[node_id], { level: 75 }),
+          20
+        );
+      })(node_id);
+    }
+  });
 
   state.update();
 }
