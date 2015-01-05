@@ -104,18 +104,18 @@ Rule.prototype = {
   nextUpdate: function() {
     var retval = this._next_update;
 
-    if ( cfg.debug ) console.log(this._name + ": main next update time: " + retval);
+    if ( cfg.debug >= 2 ) console.log(this._name + ": main next update time: " + retval);
 
     for ( var key in this._subRules ) {
       var subNext = this._subRules[key].nextUpdate();
 
       if ( subNext && ( ! retval || subNext < retval ) ) {
-        if ( cfg.debug ) console.log(this._name + " child " + key + " time is lower: " + retval + " vs " + subNext);
+        if ( cfg.debug >= 2 ) console.log(this._name + " child " + key + " time is lower: " + retval + " vs " + subNext);
         retval = subNext;
       }
     }
 
-    if ( cfg.debug && this._next_update != retval ) console.log(this._name + ": using " + retval);
+    if ( cfg.debug >= 2 && this._next_update != retval ) console.log(this._name + ": using " + retval);
 
     this._next_update = null;
 

@@ -52,6 +52,7 @@ State.prototype = {
   },
 
   update: function() {
+    if ( cfg.debug ) console.log("\n" + (new Date()) + "\nUpdate cycle starting");
     // Check things at least every half hour
     var next_run = 1800, that = this;
     var attrs = {};

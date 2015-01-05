@@ -73,7 +73,9 @@ function main() {
         state.addRule(
           new Rule(key + ' manual control', function() {
             if ( ! this.sensor(path).get("exists") ) return false;
-            var level = parseInt(fs.readFileSync(path, "utf8")) || 75;
+            var level = parseInt(fs.readFileSync(path, "utf8"));
+            if ( isNaN(level) ) level = 75;
+
             this.setAttribute(key, 'level', level);
             return true;
           })
