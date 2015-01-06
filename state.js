@@ -56,7 +56,7 @@ State.prototype = {
     // Check things at least every half hour
     var next_run = 1800, that = this;
     var attrs = {};
-    var active = 0;
+    var activeRules = [];
 
     // The device defaults are basically -infinity priority, when it comes
     // to rules and weighting.
@@ -66,7 +66,7 @@ State.prototype = {
 
     this._rules.forEach(function(r) {
       if ( r.rule.evaluate() ) {
-        active++;
+        activeRules.push(r.rule.key());;
 
         var rattrs = r.rule.attributes();
         for ( var dev_key in rattrs ) {
@@ -93,7 +93,8 @@ State.prototype = {
     }
 
     if ( cfg.debug ) {
-      console.log("Update finished.  " + active + " rules were active.  Next run in " + next_run + " seconds");
+      console.log("Update finished.  " + activeRules.length+ " rules were active.  Next run in " + next_run + " seconds");
+      if ( activeRules.length > 0 ) console.log("  Rules: " + activeRules.join(", "));
     }
 
     // Run in a new context, using .bind() to set the "this" for the call

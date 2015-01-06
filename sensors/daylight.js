@@ -21,7 +21,11 @@ DaylightSensor.prototype.recalculate = function() {
   var now = new Date(), isChanged = false;
 
   if ( ! this._last_run || this._last_run.getDay() != now.getDay() ) {
-    times = suncalc.getTimes(now, cfg.latitude, cfg.longitude);
+    // Right after midnight, suncalc still returns data for the previous day
+    var noon = new Date();
+    noon.setHours(12);
+
+    times = suncalc.getTimes(noon, cfg.latitude, cfg.longitude);
 
     this.set("sunrise", times.sunrise);
     this.set("dawn", times.dawn);
