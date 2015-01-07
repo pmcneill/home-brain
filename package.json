@@ -4,7 +4,7 @@
     "description"   : "Event-based home automation",
     "dependencies"  : {
         "suncalc"   : "1.5.*",
-        "openzwave" : "*"
+        "openzwave"   : "git://github.com/pmcneill/node-openzwave.git#master"
     },
     "author": {
         "name": "Patrick McNeill",
