@@ -24,7 +24,7 @@ function BeforeTimeRule(name, hour, minute, resetHour, resetMin) {
     resettime = d.getTime();
 
     if ( now <= goaltime ) {
-      that.setNextUpdate((goaltime - now) / 1000);
+      that.setNextUpdate(((goaltime - now) / 1000) + 60);
     }
 
     if ( resettime < goaltime ) {

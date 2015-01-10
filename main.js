@@ -46,8 +46,8 @@ function main() {
     new Rule('Evening lights')
           .addSubRule(darkness)
           .addSubRule(new BeforeTimeRule('bedtime', 23, 0))
-          .addDevice(den1, { level: 80 })
-          .addDevice(den2, { level: 80 }),
+          .addDevice(den1, { level: 50 })
+          .addDevice(den2, { level: 50 }),
     10
   );
 
@@ -62,8 +62,8 @@ function main() {
           .addDevice(garage, { level: 100 })
           .addDevice(steps, { level: true })
           .addDevice(patio, { level: true })
-          .addDevice(den1, { level: 40 })
-          .addDevice(den2, { level: 40 }),
+          .addDevice(den1, { level: 30 })
+          .addDevice(den2, { level: 30 }),
     5
   );
 
@@ -80,12 +80,12 @@ function main() {
             if ( ! this.sensor(path).get("exists") ) return false;
             var level = 75;
 
-            if ( dev instanceof ZWaveSwitchDevice ) {
-              level = true;
-            } else if ( fs.existsSync(path) ) {  // double-check, in case of lag
+            if ( fs.existsSync(path) ) {  // double-check, in case of lag
               level = parseInt(fs.readFileSync(path, "utf8"));
               if ( isNaN(level) ) level = 75;
             }
+
+            if ( dev instanceof ZWaveSwitchDevice ) level = !!level;
 
             this.setAttribute(key, 'level', level);
             return true;
