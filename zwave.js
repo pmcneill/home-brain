@@ -1,6 +1,8 @@
 var ozw = require('openzwave'),
     cfg = require('./config.js'),
-    zwave = new ozw(cfg.zwave_path);
+    zwave = new ozw(cfg.zwave_path),
+    state = require('./state.js'),
+    manual = require('./rules/manual.js');
 
 var nodes = {};
 
@@ -13,11 +15,13 @@ zwave.on('scan complete', function() {
   }
 });
 
-function Node(nodeid, classNum) {
+function Node(nodeid, valueLabel, classNum) {
   this._id = nodeid;
   this._isReady = false;
   this._updated = false;
   this._classNum = classNum;
+  this._valueLabel = valueLabel;
+  this._updateCallback = null;
 }
 
 Node.prototype = {
@@ -26,13 +30,16 @@ Node.prototype = {
     this._isReady = true;
     zwave.enablePoll(this._id, this._classNum);
     if ( this._updated ) this._flushSaved();
+  },
+  onUpdate: function(callback) {
+    this._updateCallback = callback;
   }
 };
 
 // Dimmer and Switch are mostly caching layers -- give the outer bits 
 // something to talk to until the z-wave controller is ready
 function Dimmer(nodeid) {
-  Node.call(this, nodeid, 38);
+  Node.call(this, nodeid, 'Level', 38);
 
   this._level = 0;
   this._polled_level = 0;
@@ -58,6 +65,8 @@ Dimmer.prototype._pollUpdate = function(classNum, value) {
   if ( classNum != this.classNum() || ! value || value.label != 'Level' ) return;
   if ( cfg.debug ) console.log("Z-wave node " + this._id + " polled level is " + value.value);
   this._polled_level = value.value;
+
+  if ( this._updateCallback ) this._updateCallback(this._level);
 }
 Dimmer.prototype._flushSaved = function() {
   if ( cfg.debug ) console.log("Z-wave network ready, setting " + this._id + " to " + this._level);
@@ -72,7 +81,7 @@ Dimmer.byNode = function(id) {
 
 
 function Switch(nodeid) {
-  Node.call(this, nodeid, 37);
+  Node.call(this, nodeid, 'Switch', 37);
   this._id = nodeid;
 
   // instance_id => value
@@ -110,6 +119,8 @@ Switch.prototype._pollUpdate = function(classNum, value) {
   if ( classNum != this.classNum() || ! value || value.label != 'Switch' ) return;
   if ( cfg.debug ) console.log("Z-wave node " + this._id + "." + value.instance + " polled level is " + value.value);
   this._polled[value.instance] = value.value;
+
+  if ( this._updateCallback ) this._updateCallback(value.instance, value.value);
 }
 
 Switch.byNode = function(id) {

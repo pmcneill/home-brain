@@ -74,13 +74,13 @@ Rule.prototype = {
     return this._subRules[key];
   },
 
-  evaluate: function() {
+  evaluate: function(attrs) {
     for ( var key in this._subRules ) {
-      if ( ! this._subRules[key].evaluate() ) return false;
+      if ( ! this._subRules[key].evaluate(attrs) ) return false;
     }
 
     if ( ! this._evaluate ) return true;
-    return this._evaluate();
+    return this._evaluate(attrs);
   },
 
   setAttribute: function(dev_key, attr, value) {

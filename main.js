@@ -1,5 +1,5 @@
 var fs = require('fs'),
-    State = require('./state.js'),
+    state = require('./state.js'),
     Device = require('./device.js'),
     Rule = require('./rule.js'),
     DaylightSensor = require('./sensors/daylight.js'),
@@ -12,8 +12,7 @@ var fs = require('fs'),
     ZWaveSwitchDevice = require('./devices/zwave-switch.js');
 
 function main() {
-  var state = new State(),
-      den1 = new ZWaveDimmerDevice('Lamp (stairs)', 4),
+  var den1 = new ZWaveDimmerDevice('Lamp (stairs)', 4),
       den2 = new ZWaveDimmerDevice('Lamp (wall)', 5),
       den3 = new ZWaveDimmerDevice('Lamp (corner)', 9),
       blue = new ZWaveDimmerDevice('Blue Room Lamp', 3),

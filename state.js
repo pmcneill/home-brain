@@ -50,6 +50,18 @@ State.prototype = {
 
     return this;
   },
+  deleteRule: function(rule) {
+    for ( var i = 0 ; i < this._rules.length ; i++ ) {
+      if ( this._rules[i] == rule ) {
+        this._rules.splice(i, 1);
+        break;
+      }
+    }
+
+    this.update();
+
+    return this;
+  },
 
   update: function() {
     if ( cfg.debug ) console.log("\n" + (new Date()) + "\nUpdate cycle starting");
@@ -65,7 +77,7 @@ State.prototype = {
     }
 
     this._rules.forEach(function(r) {
-      if ( r.rule.evaluate() ) {
+      if ( r.rule.evaluate(attrs) ) {
         activeRules.push(r.rule.key());;
 
         var rattrs = r.rule.attributes();
@@ -102,4 +114,4 @@ State.prototype = {
   }
 };
 
-module.exports = State;
+module.exports = new State();
