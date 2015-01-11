@@ -22,7 +22,7 @@ function main() {
       garage = new ZWaveDimmerDevice('Garage Back Door', 8),
       steps = new ZWaveSwitchDevice('Step Lights', 2, false, 3);
       patio = new ZWaveSwitchDevice('Patio Lights', 2, false, 2);
-      motion = new GPIOInputSensor('Den Motion', 7, 0),
+      motion = new GPIOInputSensor('Den Motion', 0, 0),
       daylight = new DaylightSensor('Daylight');
       darkness = new DarknessRule();
 
