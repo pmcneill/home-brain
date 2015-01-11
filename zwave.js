@@ -5,12 +5,10 @@ var ozw = require('openzwave'),
 var nodes = {};
 
 zwave.on('scan complete', function() {
-  if ( cfg.debug ) {
-    console.log("Z-wave scan complete!");
-    console.log(nodes);
-  }
+  if ( cfg.debug ) console.log("Z-wave scan complete!");
 
   for ( var nodeid in nodes ) {
+    if ( cfg.debug ) console.log("...node " + nodeid + " class " + nodes[nodeid]._classNum);
     nodes[nodeid].ready();
   }
 });
@@ -27,10 +25,7 @@ Node.prototype = {
   ready: function() {
     this._isReady = true;
     zwave.enablePoll(this._id, this._classNum);
-    if ( this._updated ) {
-      if ( cfg.debug ) console.log("Z-wave ready, setting " + this._id);
-      this._flushSaved();
-    }
+    if ( this._updated ) this._flushSaved();
   }
 };
 
@@ -54,20 +49,18 @@ Dimmer.prototype.setLevel = function(level) {
   if ( level < 0 ) level = 0;
   this._level = level;
 
-  if ( this._isReady ) {
-    zwave.setLevel(this._id, level);
-  } else {
-    if ( cfg.debug ) console.log("Z-wave not ready, delaying setLevel for node " + this._id + " to " + level);
-    this._updated = true;
-  }
+  zwave.setLevel(this._id, level);
+  if ( ! this._isReady ) this._updated = true;
+
   return this;
 }
 Dimmer.prototype._pollUpdate = function(classNum, value) {
-  if ( classNum != this.classNum() || value.label != 'Level' ) return;
-  this._level = this._polled_level = value.value;
+  if ( classNum != this.classNum() || ! value || value.label != 'Level' ) return;
+  if ( cfg.debug ) console.log("Z-wave node " + this._id + " polled level is " + value.value);
+  this._polled_level = value.value;
 }
 Dimmer.prototype._flushSaved = function() {
-  if ( cfg.debug ) console.log("Z-wave ready, setting " + this._id + " to " + this._level);
+  if ( cfg.debug ) console.log("Z-wave network ready, setting " + this._id + " to " + this._level);
   this.setLevel(this._level);
 }
    
@@ -92,11 +85,10 @@ Switch.prototype.constructor = Node;
 Switch.prototype.set = function(value, instance) {
   instance = instance || 1;
   this._instances[instance] = value;
-  if ( this._isReady ) {
-    zwave["switch" + (value ? "On" : "Off")](this._id, instance);
-  } else {
-    this._updated = true;
-  }
+
+  zwave["switch" + (value ? "On" : "Off")](this._id, instance);
+  if ( ! this._isReady ) this._updated = true;
+
   return this;
 }
 Switch.prototype.on = function(instance) {
@@ -110,11 +102,13 @@ Switch.prototype.isOn = function(instance) {
 }
 Switch.prototype._flushSaved = function() {
   for ( var key in this._instances ) {
+    if ( cfg.debug ) console.log("Z-wave network ready, setting " + this._id + "." + key + " to " + this._level);
     this.set(this._instances[key], key);
   }
 }
 Switch.prototype._pollUpdate = function(classNum, value) {
-  if ( classNum != this.classNum() || value.label != 'Switch' ) return;
+  if ( classNum != this.classNum() || ! value || value.label != 'Switch' ) return;
+  if ( cfg.debug ) console.log("Z-wave node " + this._id + "." + value.instance + " polled level is " + value.value);
   this._polled[value.instance] = value.value;
 }
 
@@ -125,7 +119,7 @@ Switch.byNode = function(id) {
 
 var value_handler = function(nodeid, comclass, value) {
   if ( ! nodes[nodeid] ) return;
-  nodes[nodeid]._pollUpdate(value.value);
+  nodes[nodeid]._pollUpdate(comclass, value);
 };
 
 zwave.on('value added', value_handler);
