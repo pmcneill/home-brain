@@ -19,10 +19,15 @@ function ZWaveDimmerDevice(name, node_id, defaultLevel) {
       return;
     }
 
-    var m = new ManualRule("Node " + node_id + " override to " + level);
-    m.addDevice(that, { level: level });
-    if ( cfg.debug ) console.log("Creating override rule for dimmer " + node_id + " at " + level);
-    state.addRule(m, 9999);
+    if ( this._manualRule ) {
+      state.deleteRule(this._manualRule);
+      this._manualRule = null;
+    } else {
+      var m = new ManualRule("Node " + node_id + " override to " + level);
+      m.addDevice(that, { level: level });
+      if ( cfg.debug ) console.log("Creating override rule for dimmer " + node_id + " at " + level);
+      state.addRule(m, 9999);
+    }
   });
 }
 

@@ -12,6 +12,7 @@ function ZWaveSwitchDevice(name, node_id, defaultLevel, instance) {
 
   var that = this;
 
+/*
   this._switch.onUpdate(function(level) {
     if ( !!level == !!that.get('level') ) return;
 
@@ -20,6 +21,7 @@ function ZWaveSwitchDevice(name, node_id, defaultLevel, instance) {
     m.addDevice(that, { level: level });
     state.addRule(m, 9999);
   });
+*/
 }
 
 ZWaveSwitchDevice.prototype = new Device();

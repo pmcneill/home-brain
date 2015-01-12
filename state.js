@@ -4,6 +4,7 @@ function State() {
   this._rules = [];
   this._devices = {};
   this._timeout_handle = null;
+  this._updating = false;
 }
 
 State.prototype = {
@@ -64,6 +65,10 @@ State.prototype = {
   },
 
   update: function() {
+    if ( this._updating ) return;
+
+    this._updating = true;
+
     if ( cfg.debug ) console.log("\n" + (new Date()) + "\nUpdate cycle starting");
     // Check things at least every half hour
     var next_run = 1800, that = this;
@@ -108,6 +113,8 @@ State.prototype = {
       console.log("Update finished.  " + activeRules.length+ " rules were active.  Next run in " + next_run + " seconds");
       if ( activeRules.length > 0 ) console.log("  Rules: " + activeRules.join(", "));
     }
+
+    this._updating = false;
 
     // Run in a new context, using .bind() to set the "this" for the call
     this._timeout_handle = setTimeout(this.update.bind(this), next_run * 1000);

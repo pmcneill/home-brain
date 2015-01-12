@@ -66,7 +66,7 @@ Dimmer.prototype._pollUpdate = function(classNum, value) {
   if ( cfg.debug ) console.log("Z-wave node " + this._id + " polled level is " + value.value);
   this._polled_level = value.value;
 
-  if ( this._updateCallback ) this._updateCallback(this._level);
+  if ( this._updateCallback ) this._updateCallback(this._polled_level);
 }
 Dimmer.prototype._flushSaved = function() {
   if ( cfg.debug ) console.log("Z-wave network ready, setting " + this._id + " to " + this._level);
@@ -111,7 +111,7 @@ Switch.prototype.isOn = function(instance) {
 }
 Switch.prototype._flushSaved = function() {
   for ( var key in this._instances ) {
-    if ( cfg.debug ) console.log("Z-wave network ready, setting " + this._id + "." + key + " to " + this._level);
+    if ( cfg.debug ) console.log("Z-wave network ready, setting " + this._id + "." + key + " to " + this._instances[key]);
     this.set(this._instances[key], key);
   }
 }
