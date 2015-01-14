@@ -22,7 +22,6 @@ function main() {
       garage = new ZWaveDimmerDevice('Garage Back Door', 8),
       steps = new ZWaveSwitchDevice('Step Lights', 2, false, 3);
       patio = new ZWaveSwitchDevice('Patio Lights', 2, false, 2);
-      motion = new GPIOInputSensor('Den Motion', 0, 0),
       daylight = new DaylightSensor('Daylight');
       darkness = new DarknessRule();
 
@@ -45,25 +44,38 @@ function main() {
   state.addRule(
     new Rule('Evening lights')
           .addSubRule(darkness)
-          .addSubRule(new BeforeTimeRule('bedtime', 23, 0))
+          .addSubRule(new BeforeTimeRule('bedtime', 22, 0))
           .addDevice(den1, { level: 50 })
-          .addDevice(den2, { level: 50 }),
+          .addDevice(den2, { level: 50 })
+          .addDevice(steps, { level: true }),
     10
   );
 
+/*
   state.addRule(
     new Rule('Motion lights')
           .addSubRule(darkness)
           .addSubRule(
             new MotionDelayRule('Den Motion', 300)
-              .addSensor(motion)
+              .addSensor(new GPIOInputSensor('Den Motion', 0, 0))
+          )
+          .addDevice(den1, { level: 40 })
+          .addDevice(den2, { level: 40 }),
+    5
+  );
+*/
+
+  state.addRule(
+    new Rule('Deck door lights')
+          //.addSubRule(darkness)
+          .addSubRule(
+            new MotionDelayRule('Deck door open delay', 600)
+              .addSensor(new GPIOInputSensor('Deck door open', 5, 1))
           )
           .addDevice(flood, { level: 100 })
           .addDevice(garage, { level: 100 })
           .addDevice(steps, { level: true })
-          .addDevice(patio, { level: true })
-          .addDevice(den1, { level: 30 })
-          .addDevice(den2, { level: 30 }),
+          .addDevice(patio, { level: true }),
     5
   );
 

@@ -5,19 +5,19 @@ var util = require('../util.js'),
  * Wait for a signal on a GPIO pin.  The pin should be the 
  * wiringPi pin number, target 0 or 1.  The pin will be
  * set to input mode with an appropriate pull up/down 
- * resistor.
+ * resistor, based on the pullDown arg.
  */
-function GPIOInputSensor(name, pin, target) {
+function GPIOInputSensor(name, pin, target, pullDown) {
   Sensor.call(this, name);
 
   var that = this;
 
   this._pin = pin;
   this._target = target;
-  this._wfi_mode = target == 0 ? 'falling' : 'rising';
+  this._timeoutHandle = null;
 
   util.gpioExec("mode", pin, "in", function() {
-    util.gpioExec("mode", pin, that._target == 0 ? 'up' : 'down', function() {
+    util.gpioExec("mode", pin, pullDown ? 'down' : 'up', function() {
       setTimeout(that.waitForInput.bind(that), 100);
     })
   });
@@ -28,30 +28,42 @@ function GPIOInputSensor(name, pin, target) {
 GPIOInputSensor.prototype = new Sensor();
 GPIOInputSensor.prototype.constructor = GPIOInputSensor;
 
-GPIOInputSensor.prototype.readLevel = function() {
-  var that = this, lastLevel = this.get("level");
+GPIOInputSensor.prototype.update = function(level) {
+  var lastLevel = this.get("level");
+  if ( typeof(level) != 'number' ) level = parseInt(level);
 
+console.log("\n\n\n ====> Level now " + level + " on pin " + this._pin + "\n\n\n");
+
+  this.set("level", level);
+  if ( level === this._target ) this.set("lastTargetAt", new Date());
+
+  if ( level !== lastLevel ) this.changed();
+
+  return level;
+}
+
+GPIOInputSensor.prototype.readLevel = function(callback) {
+  var that = this;
+
+  // If we're already at the target level, wait for 
   util.gpioExec("read", this._pin, "", function(out) {
-    var level = parseInt(out.trim());
-    that.set("level", level);
-
-    if ( level == that._target ) that.set("lastTargetAt", new Date());
-
-    if ( lastLevel != level ) that.changed();
+    var level = that.update(out);
+    if ( callback ) callback(level);
   });
-};
+}
 
 GPIOInputSensor.prototype.waitForInput = function() {
   var that = this;
 
-  util.gpioExec("wfi", this._pin, this._wfi_mode, function() {
-    that.set("lastTargetAt", new Date());
-    that.set("level", that._target);
+  this.readLevel(function(level) {
+    var wfi_mode = level ? 'falling' : 'rising';
 
-    that.changed();
+console.log("\n\n\n ====> Waiting for " + wfi_mode + " on pin " + that._pin + ", now at " + level + "\n\n\n");
 
-    // Give it some leeway for de-bouncing / pin release
-    setTimeout(that.waitForInput.bind(that), 250);
+    util.gpioExec("wfi", that._pin, wfi_mode, function() {
+      that.update(level ? 0 : 1);
+      setTimeout(that.waitForInput.bind(that), 250);
+    });
   });
 };
 
