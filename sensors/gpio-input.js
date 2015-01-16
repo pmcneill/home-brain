@@ -7,7 +7,7 @@ var util = require('../util.js'),
  * set to input mode with an appropriate pull up/down 
  * resistor, based on the pullDown arg.
  */
-function GPIOInputSensor(name, pin, target, interval, pullDown) {
+function GPIOInputSensor(name, pin, target, useInterrupt, interval, pullDown) {
   Sensor.call(this, name);
 
   var that = this;
@@ -15,12 +15,17 @@ function GPIOInputSensor(name, pin, target, interval, pullDown) {
   this._pin = pin;
   this._target = target;
   this._timeoutHandle = null;
+  this._interval = interval || 15000;
 
   util.gpioExec("mode", pin, "in", function() {
     util.gpioExec("mode", pin, pullDown ? 'down' : 'up');
   });
 
-  setInterval(this.readLevel.bind(this), interval || 15000);
+  if ( useInterrupt ) {
+    this.waitForInput();
+  } else {
+    setInterval(this.readLevel.bind(this), this._interval);
+  }
 }
 
 GPIOInputSensor.prototype = new Sensor();
@@ -46,6 +51,23 @@ GPIOInputSensor.prototype.readLevel = function(callback) {
     var level = that.update(out);
     if ( callback ) callback(level);
   });
+}
+
+GPIOInputSensor.prototype.waitForInput = function() {
+  var that = this;
+
+  this.readLevel(function(level) {
+    var wfi_mode = level ? 'falling' : 'rising';
+
+    if ( level === that._target ) {
+      setTimeout(that.waitForInput.bind(that), that._interval);
+    } else {
+      util.gpioExec("wfi", that._pin, wfi_mode, function() {
+        that.readLevel(function() { setTimeout(that.waitForInput.bind(that), 250) });
+      });
+    }
+  });
+
 }
 
 module.exports = GPIOInputSensor;

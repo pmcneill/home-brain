@@ -56,7 +56,7 @@ function main() {
           .addSubRule(darkness)
           .addSubRule(
             new MotionDelayRule('Den Motion', 300)
-              .addSensor(new GPIOInputSensor('Den Motion', 0, 0, 15000))
+              .addSensor(new GPIOInputSensor('Den Motion', 0, 0, true, 15000))
           )
           .addDevice(den1, { level: 40 })
           .addDevice(den2, { level: 40 }),
@@ -68,7 +68,7 @@ function main() {
           .addSubRule(darkness)
           .addSubRule(
             new MotionDelayRule('Deck door open delay', 600)
-              .addSensor(new GPIOInputSensor('Deck door open', 5, 1, 500))
+              .addSensor(new GPIOInputSensor('Deck door open', 5, 1, false, 500))
           )
           .addDevice(flood, { level: 100 })
           .addDevice(garage, { level: 100 })
@@ -82,7 +82,7 @@ function main() {
           .addSubRule(darkness)
           .addSubRule(
             new MotionDelayRule('Front door open delay', 300)
-              .addSensor(new GPIOInputSensor('Front door open', 6, 1, 1000))
+              .addSensor(new GPIOInputSensor('Front door open', 6, 1, false, 1000))
           )
           .addDevice(blue, { level: 80 }),
     5
