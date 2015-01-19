@@ -13,6 +13,42 @@ zwave.on('scan complete', function() {
   }
 });
 
+var COMMANDS_PER_SECOND = 3;
+var times = [];
+var queue = [];
+var queue_timeout = null;
+
+function zwaveRunQueue() {
+  var now = (new Date()).getTime();
+
+  for ( var i = 0 ; i < COMMANDS_PER_SECOND && queue.length > 0 ; i++ ) {
+    var last = times[0];
+
+    if ( times.length >= COMMANDS_PER_SECOND ) {
+      if ( last > now - 1000 ) {
+        console.log("RunQueue: Setting next run, " + now);
+        queue_timeout = setTimeout(zwaveRunQueue, 1000);
+        return;
+      }
+
+      times.shift();
+    }
+
+    times.push(now);
+    var cmd = queue.shift();
+    console.log("RunQueue: Actually running " + cmd.command + " " + cmd.node + " " + cmd.arg);
+    zwave[cmd.command](cmd.node, cmd.arg);
+  }
+
+  if ( queue.length > 0 ) queue_timeout = setTimeout(zwaveRunQueue, 1000);
+}
+
+function zwaveCommand(node, command, arg) {
+  queue.push({node: node, command: command, arg: arg});
+
+  if ( ! queue_timeout ) zwaveRunQueue();
+}
+
 function Node(nodeid, classNum) {
   this._id = nodeid;
   this._isReady = false;
@@ -49,7 +85,7 @@ Dimmer.prototype.setLevel = function(level) {
   if ( level < 0 ) level = 0;
   this._level = level;
 
-  zwave.setLevel(this._id, level);
+  zwaveCommand(this._id, "setLevel", level);
   if ( ! this._isReady ) this._updated = true;
 
   return this;
@@ -86,7 +122,8 @@ Switch.prototype.set = function(value, instance) {
   instance = instance || 1;
   this._instances[instance] = value;
 
-  zwave["switch" + (value ? "On" : "Off")](this._id, instance);
+  zwaveCommand(this._id, "switch" + (value ? "On" : "Off"), instance);
+
   if ( ! this._isReady ) this._updated = true;
 
   return this;
