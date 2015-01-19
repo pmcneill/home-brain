@@ -2,6 +2,7 @@ var fs = require('fs'),
     State = require('./state.js'),
     Device = require('./device.js'),
     Rule = require('./rule.js'),
+    ButtonRule = require('./rules/button.js'),
     DaylightSensor = require('./sensors/daylight.js'),
     DarknessRule = require('./rules/darkness.js'),
     BeforeTimeRule = require('./rules/before-time.js'),
@@ -20,6 +21,7 @@ function main() {
       flood = new ZWaveDimmerDevice('Flood Light', 7),
       deck = new ZWaveDimmerDevice('Deck Door', 6),
       garage = new ZWaveDimmerDevice('Garage Back Door', 8),
+      front = new ZWaveDimmerDevice('Front Lights', 12),
       steps = new ZWaveSwitchDevice('Step Lights', 2, false, 3);
       patio = new ZWaveSwitchDevice('Patio Lights', 2, false, 2);
       daylight = new DaylightSensor('Daylight');
@@ -34,6 +36,7 @@ function main() {
     7: flood,
     8: garage,
     9: den3,
+    12: front,
     '2.2': patio,
     '2.3': steps
   };
@@ -47,6 +50,7 @@ function main() {
           .addSubRule(new BeforeTimeRule('bedtime', 22, 0))
           .addDevice(den1, { level: 50 })
           .addDevice(den2, { level: 50 })
+          .addDevice(front, { level: 80 })
           .addDevice(steps, { level: true }),
     10
   );
@@ -84,8 +88,38 @@ function main() {
             new MotionDelayRule('Front door open delay', 300)
               .addSensor(new GPIOInputSensor('Front door open', 6, 1, false, 1000))
           )
+          .addDevice(front, { level: 80 })
           .addDevice(blue, { level: 80 }),
     5
+  );
+
+  var r = new ButtonRule('All off');
+  r.addSensor(new GPIOInputSensor('Bottom toggle', 2, 0, true));
+  for ( var node_id in zwave_devices ) {
+    r.addDevice(zwave_devices[node_id], { level: 0 });
+  }
+  state.addRule(r, 1000);
+
+  state.addRule(
+    new ButtonRule('Outside on full')
+      .addSensor(new GPIOInputSensor('Top toggle', 12, 0, true))
+      .addDevice(deck, { level: 100 })
+      .addDevice(flood, { level: 100 })
+      .addDevice(garage, { level: 100 })
+      .addDevice(front, { level: 100 })
+      .addDevice(patio, { level: true })
+      .addDevice(steps, { level: true }),
+    500
+  );
+
+  state.addRule(
+    new ButtonRule('Indoor on')
+      .addSensor(new GPIOInputSensor('Middle toggle', 3, 0, true))
+      .addDevice(den1, { level: 80 })
+      .addDevice(den2, { level: 80 })
+      .addDevice(den3, { level: 80 })
+      .addDevice(blue, { level: 80 }),
+    500
   );
 
   for ( var node_id in zwave_devices ) {

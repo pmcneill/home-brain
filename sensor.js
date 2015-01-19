@@ -27,6 +27,10 @@ Sensor.prototype = {
   },
   has: function(name) {
     return this._data.hasOwnProperty(name);
+  },
+
+  isTriggered: function() {
+    return false;
   }
 };
 

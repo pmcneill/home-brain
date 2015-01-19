@@ -70,4 +70,8 @@ GPIOInputSensor.prototype.waitForInput = function() {
 
 }
 
+GPIOInputSensor.prototype.isTriggered = function() {
+  return this.get('level') === this._target;
+}
+
 module.exports = GPIOInputSensor;
