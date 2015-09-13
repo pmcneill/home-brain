@@ -113,12 +113,10 @@ function main() {
   );
 
   state.addRule(
-    new ButtonRule('Indoor on')
+    new ButtonRule('Movie mode')
       .addSensor(new GPIOInputSensor('Middle toggle', 3, 0, true))
-      .addDevice(den1, { level: 80 })
-      .addDevice(den2, { level: 80 })
-      .addDevice(den3, { level: 80 })
-      .addDevice(blue, { level: 80 }),
+      .addDevice(den1, { level: 35 })
+      .addDevice(den2, { level: 30 }),
     500
   );
 
