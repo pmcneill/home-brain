@@ -8,6 +8,7 @@ var fs = require('fs'),
     BeforeTimeRule = require('./rules/before-time.js'),
     MotionDelayRule = require('./rules/motion-delay.js'),
     GPIOInputSensor = require('./sensors/gpio-input.js'),
+    MQTTInputSensor = require('./sensors/mqtt-input.js'),
     FileSensor = require('./sensors/test-file.js'),
     ZWaveDimmerDevice = require('./devices/zwave-dimmer.js');
     ZWaveSwitchDevice = require('./devices/zwave-switch.js');
@@ -60,7 +61,7 @@ function main() {
           .addSubRule(darkness)
           .addSubRule(
             new MotionDelayRule('Den Motion', 300)
-              .addSensor(new GPIOInputSensor('Den Motion', 0, 0, true, 15000))
+              .addSensor(new MQTTInputSensor('Den Motion', 1, 1))
           )
           .addDevice(den1, { level: 40 })
           .addDevice(den2, { level: 40 }),
@@ -71,8 +72,8 @@ function main() {
     new Rule('Deck door lights')
           .addSubRule(darkness)
           .addSubRule(
-            new MotionDelayRule('Deck door open delay', 600)
-              .addSensor(new GPIOInputSensor('Deck door open', 5, 1, false, 500))
+            new MotionDelayRule('Deck door open delay', 900)
+              .addSensor(new MQTTInputSensor('Deck door open', 6, 0))
           )
           .addDevice(flood, { level: 100 })
           .addDevice(garage, { level: 100 })
@@ -86,7 +87,7 @@ function main() {
           .addSubRule(darkness)
           .addSubRule(
             new MotionDelayRule('Front door open delay', 300)
-              .addSensor(new GPIOInputSensor('Front door open', 6, 1, false, 1000))
+              .addSensor(new MQTTInputSensor('Front door open', 5, 0))
           )
           .addDevice(front, { level: 80 })
           .addDevice(blue, { level: 80 }),
@@ -94,7 +95,7 @@ function main() {
   );
 
   var r = new ButtonRule('All off');
-  r.addSensor(new GPIOInputSensor('Bottom toggle', 2, 0, true));
+  r.addSensor(new MQTTInputSensor('Bottom toggle', 0, 1));
   for ( var node_id in zwave_devices ) {
     r.addDevice(zwave_devices[node_id], { level: 0 });
   }
@@ -102,7 +103,7 @@ function main() {
 
   state.addRule(
     new ButtonRule('Outside on full')
-      .addSensor(new GPIOInputSensor('Top toggle', 12, 0, true))
+      .addSensor(new MQTTInputSensor('Top toggle', 2, 1))
       .addDevice(deck, { level: 100 })
       .addDevice(flood, { level: 100 })
       .addDevice(garage, { level: 100 })
@@ -114,7 +115,7 @@ function main() {
 
   state.addRule(
     new ButtonRule('Movie mode')
-      .addSensor(new GPIOInputSensor('Middle toggle', 3, 0, true))
+      .addSensor(new MQTTInputSensor('Middle toggle', 8, 1))
       .addDevice(den1, { level: 35 })
       .addDevice(den2, { level: 30 }),
     500

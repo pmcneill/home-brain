@@ -1,14 +1,15 @@
 {
-    "name"          : "home-brain",
-    "version"       : "0.0.1",
-    "description"   : "Event-based home automation",
-    "dependencies"  : {
-        "suncalc"   : "1.5.*",
-        "openzwave"   : "git://github.com/pmcneill/node-openzwave.git#master"
-    },
-    "author": {
-        "name": "Patrick McNeill",
-        "email": "patrick@patrickmcneill.com",
-        "url": "http://patrickmcneill.com"
-    }
+  "name": "home-brain",
+  "version": "0.0.1",
+  "description": "Event-based home automation",
+  "dependencies": {
+    "mqtt": "^1.4.0",
+    "openzwave": "git://github.com/pmcneill/node-openzwave.git#master",
+    "suncalc": "1.5.*"
+  },
+  "author": {
+    "name": "Patrick McNeill",
+    "email": "patrick@patrickmcneill.com",
+    "url": "http://patrickmcneill.com"
+  }
 }
