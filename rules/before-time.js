@@ -15,13 +15,18 @@ function BeforeTimeRule(name, hour, minute, resetHour, resetMin) {
         now = d.getTime(),
         goaltime, resettime;
 
-    d.setHours(hour);
-    d.setMinutes(minute);
-    goaltime = d.getTime();
-
     d.setHours(resetHour);
     d.setMinutes(resetMin);
     resettime = d.getTime();
+
+    if ( now > resettime &&
+         ( hour < resetHour || ( hour == resetHour && minute < resetMin ) ) ) {
+      d.setHours(hour + 24);
+    } else {
+      d.setHours(hour);
+    }
+    d.setMinutes(minute);
+    goaltime = d.getTime();
 
     if ( now <= goaltime ) {
       that.setNextUpdate(((goaltime - now) / 1000) + 60);

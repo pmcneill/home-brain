@@ -26,7 +26,8 @@ function main() {
       steps = new ZWaveSwitchDevice('Step Lights', 2, false, 3);
       patio = new ZWaveSwitchDevice('Patio Lights', 2, false, 2);
       daylight = new DaylightSensor('Daylight');
-      darkness = new DarknessRule();
+      darkness = new DarknessRule(),
+      den_motion = new MotionDelayRule('Den Motion', 300).addSensor(new MQTTInputSensor('Den Motion', 1, 1))
 
   // Obviously, refactor this...
   var zwave_devices = {
@@ -57,14 +58,20 @@ function main() {
   );
 
   state.addRule(
-    new Rule('Motion lights')
+    new Rule('Evening motion lights')
           .addSubRule(darkness)
-          .addSubRule(
-            new MotionDelayRule('Den Motion', 300)
-              .addSensor(new MQTTInputSensor('Den Motion', 1, 1))
-          )
+          .addSubRule(den_motion)
+          .addSubRule(new BeforeTimeRule('latenight', 1, 0))
           .addDevice(den1, { level: 40 })
           .addDevice(den2, { level: 40 }),
+    7
+  );
+
+  state.addRule(
+    new Rule('Late night motion lights')
+          .addSubRule(darkness)
+          .addSubRule(den_motion)
+          .addDevice(den2, { level: 20 }),
     5
   );
 

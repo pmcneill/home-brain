@@ -8,6 +8,7 @@ var client = mqtt.connect('mqtt://192.168.0.27:1883'),
 client.on('connect', function() {
   console.log("Connected to MQTT server");
   client.subscribe('/security');
+  client.publish('/securityQuery', '');
 });
 
 client.on('message', function(topic, payload) {
